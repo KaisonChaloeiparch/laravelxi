@@ -1,6 +1,12 @@
 <?php
 
+use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MovieController;
+use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -75,17 +81,85 @@ Route::get('/test',function(){
     return view('test');
 })->name('test');
 
-// Route::get('/category/sport', function () {
-//     return "<h1>This is sport Category Page</h1>";
-// });
-// Route::get('/category/politic', function () {
-//     return "<h1>This is politic Category Page</h1>";
-// });
-// Route::get('/category/entertain', function () {
-//     return "<h1>This is entertain Category Page</h1>";
-// });
-// Route::get('/category/auto', function () {
-//     return "<h1>This is auto Category Page</h1>";
-// });
+Route::get('/', function () {
+    // return view('welcome');
+    return view('home');
+});
+
+// use App\Models\Product;
+// use Illuminate\Support\Facades\DB;
+
+Route::get('query/sql', function () {
+    $products = DB::select("SELECT * FROM products");
+    // $products = DB::select("SELECT * FROM products WHERE price > 100");
+    return view('query-test', compact('products'));
+});
+
+Route::get('query/builder', function () {
+    $products = DB::table('products')->get();
+    // $products = DB::table('products')->where('price', '>', 100)->get();
+    return view('query-test', compact('products'));
+});
+
+Route::get('query/orm', function () {
+    $products = Product::get();
+    // $products = Product::where('price', '>', 100)->get();
+    return view('query-test', compact('products'));
+});
+
+Route::get('barchart', function () {    
+    return view('barchart');
+})->name('barchart');
+
+
+Route::resource('movie', MovieController::class);
+
+Route::get('movie-filter', [MovieController::class,'indexFilter']);
+
+//19jan25//
+
+Route::get('product-index', function () {
+    $products = Product::get();
+    return view('query-test', compact('products'));
+})->name("product.index");
+
+
+Route::get('product-form', function () {    
+    return view('product-form');
+})->name("product.form");
+
+Route::post('/product-submit', function (HttpRequest $request) {    
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]  , [
+        'name.required' => 'กรุณากรอกชื่อสินค้า',
+        'description.required' => 'กรุณากรอกรายละเอียดสินค้า',
+        'price.required' => 'กรุณากรอกราคา',
+        'price.numeric' => 'ราคาต้องเป็นตัวเลข',
+        'image.image' => 'ไฟล์ต้องเป็นรูปภาพ',
+    ]
+      );    
+
+    // ตรวจสอบว่ามีการอัปโหลดรูปภาพ
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('uploads', 'public');
+        $url = Storage::url($imagePath);
+        $data["image"] =$url;
+    }
+
+    // บันทึกข้อมูลในฐานข้อมูล
+    Product::create($data);
+
+    return redirect()->route('product.index')->with('success', 'เพิ่มสินค้าแล้ว!');
+})->name('product.submit');
+
+
+use App\Http\Controllers\CourseRegistrationController;
+
+Route::get('/register', [CourseRegistrationController::class, 'showForm'])->name('courses.form');
+Route::post('/register', [CourseRegistrationController::class, 'register'])->name('courses.register');
 
 
