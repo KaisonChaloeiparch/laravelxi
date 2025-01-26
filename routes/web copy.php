@@ -60,12 +60,9 @@ Route::get("/gallery/cat", function () {
     $cat = "http://www.onyxtruth.com/wp-content/uploads/2017/06/black-panther-movie-onyx-truth.jpg";
     return view("test/cat", compact("cat"));
 });
-Route::middleware(['auth', 'role:admin,teacher,student'])->group(function () {
-Route::middleware(['auth'])->group(function () {
+
 Route::get("/teacher" , function (){
 	return view("teacher");
-  });
- });
 });
 
 Route::get("/student" , function (){
@@ -84,10 +81,10 @@ Route::get('/test',function(){
     return view('test');
 })->name('test');
 
-// Route::get('/', function () {
-//     // return view('welcome');
-//     return view('home');
-// });
+Route::get('/', function () {
+    // return view('welcome');
+    return view('home');
+});
 
 // use App\Models\Product;
 // use Illuminate\Support\Facades\DB;
@@ -164,4 +161,5 @@ use App\Http\Controllers\CourseRegistrationController;
 
 Route::get('/register', [CourseRegistrationController::class, 'showForm'])->name('courses.form');
 Route::post('/register', [CourseRegistrationController::class, 'register'])->name('courses.register');
+
 
