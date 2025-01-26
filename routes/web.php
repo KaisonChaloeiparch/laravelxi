@@ -161,7 +161,19 @@ Route::post('/product-submit', function (HttpRequest $request) {
 
 
 use App\Http\Controllers\CourseRegistrationController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/register', [CourseRegistrationController::class, 'showForm'])->name('courses.form');
 Route::post('/register', [CourseRegistrationController::class, 'register'])->name('courses.register');
 
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__.'/auth.php';
